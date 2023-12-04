@@ -1,4 +1,5 @@
-SYMBOL = /\*/
+SYMBOL = /\*|\@|\#|\-|\=|\/|\+|\%|\$|\&/
+GEAR = /\*/
 
 def regex_positions(string, regex)
   string.enum_for(:scan, regex).map { Regexp.last_match.begin(0) }
@@ -11,6 +12,12 @@ numbered_lines = (0..$lines.length - 1).zip $lines
 gear_coordinates = numbered_lines.flat_map do |line_no, line|
   regex_positions(line, SYMBOL).map do |gear_position|
     [line_no, gear_position]
+  end
+end
+
+symbol_coordinates = numbered_lines.flat_map do |line_no, line|
+  regex_positions(line, SYMBOL).map do |symbol_position|
+    [line_no, symbol_position]
   end
 end
 
@@ -63,9 +70,16 @@ two_part_gear_coordinates = gear_coordinates.select do |l, r|
   adjacent_codes_with_coords([l, r]).length == 2
 end
 
-total = two_part_gear_coordinates.map do |l, r|
+part2_total = two_part_gear_coordinates.map do |l, r|
   adjacent_codes_with_coords([l, r]).reduce(1) do |acc, code|
     acc * code[1].to_i
   end
 end.sum
-puts total
+
+
+code_coordinates = symbol_coordinates.flat_map do |coordinate|
+  adjacent_codes_with_coords(coordinate)
+end.to_h
+
+part1_total = code_coordinates.values.map(&:to_i).sum
+puts part1_total, part2_total
